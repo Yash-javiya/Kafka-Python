@@ -1,25 +1,25 @@
-from confluent_kafka import Producer
+from kafka_client import KafkaProducerClient
 
-# Kafka configuration
-conf = {"bootstrap.servers": "localhost:9092"}
-
-# Create Producer instance
-producer = Producer(conf)
-
-
-# Callback for delivery reports
 def delivery_report(err, msg):
     if err is not None:
         print(f"Message delivery failed: {err}")
     else:
         print(f"Message delivered to {msg.topic()} [{msg.partition()}]")
 
+# Kafka producer configuration
+producer_config = {
+    "bootstrap.servers": "localhost:9092"
+}
 
-# Produce a message
+# Create a producer instance
+producer_client = KafkaProducerClient(producer_config)
+producer_client.connect()
+
+# Send messages
 topic = "test-topic"
 for i in range(10):
     message = f"Message {i}"
-    producer.produce(topic, message.encode("utf-8"), callback=delivery_report)
+    producer_client.send_message(topic, message, callback=delivery_report)
 
-# Wait for any outstanding messages to be delivered and delivery report
-producer.flush()
+# Wait for message processing
+producer_client.wait_for_processing()
