@@ -4,28 +4,42 @@ services:
         hostname: kafka
         container_name: kafka
         ports:
-            - '9092:9092'
+            - '9092:9092' # Internal Docker network access
+            - '9094:9094' # External host machine access
         environment:
             CLUSTER_ID: fd5bd49a-96aa-458c-a287-1663b2db6aad
-            KAFKA_PROCESS_ROLES: broker,controller
+            KAFKA_PROCESS_ROLES: broker,controller # Enable both broker and controller roles
             KAFKA_NODE_ID: 1
-            KAFKA_CONTROLLER_QUORUM_VOTERS: '1@localhost:9093'
-            KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092,CONTROLLER://0.0.0.0:9093
-            KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,CONTROLLER:PLAINTEXT
-            KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
-            KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
-            KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092
-            KAFKA_LOG_DIRS: '/var/lib/kafka/data'
-            KAFKA_NUM_PARTITIONS: 1
-            KAFKA_AUTO_CREATE_TOPICS_ENABLE: 'true'
-            KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
-            KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
-            KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
-            KAFKA_MIN_INSYNC_REPLICAS: 1
-            KAFKA_LOG_MESSAGE_FORMAT_VERSION: '3.0'
-            KAFKA_LOG_RETENTION_HOURS: 168
-            KAFKA_LOG_RETENTION_BYTES: -1
-            KAFKA_LOG_SEGMENT_BYTES: 1073741824
-            KAFKA_HEAP_OPTS: '-Xmx512M -Xms512M'
+            KAFKA_CONTROLLER_QUORUM_VOTERS: '1@localhost:9093' # Single node controller quorum
+            KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092,PLAINTEXT_HOST://0.0.0.0:9094,CONTROLLER://0.0.0.0:9093
+            KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT,CONTROLLER:PLAINTEXT
+            KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT # Inter-broker communication via PLAINTEXT listener
+            KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER # Specify the listener name used for the controller
+            KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,PLAINTEXT_HOST://localhost:9094 # Advertise to both Docker and host machine
+            KAFKA_LOG_DIRS: '/var/lib/kafka/data' # Log directory for Kafka data
+            KAFKA_AUTO_CREATE_TOPICS_ENABLE: 'true' # Automatically create topics if they don't exist
+            KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1 # Replication factor for offset topics
+            KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1 # Minimum in-sync replicas for transaction state log
+            KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1 # Replication factor for transaction state log
+            KAFKA_MIN_INSYNC_REPLICAS: 1 # Minimum in-sync replicas for producing messages
         volumes:
-            - ./data:/var/lib/kafka/data
+            - ./data:/var/lib/kafka/data # Mount local directory for Kafka data
+        networks:
+            - Kafka-network
+
+    kafdrop:
+        image: obsidiandynamics/kafdrop:latest
+        container_name: kafdrop
+        ports:
+            - '9000:9000' # Expose Kafdrop UI on port 9000
+        environment:
+            KAFKA_BROKERCONNECT: 'kafka:9092' # Connect Kafdrop to the Kafka broker within the Docker network
+            JVM_OPTS: '-Xms32M -Xmx64M' # Set JVM options for Kafdrop
+        depends_on:
+            - kafka
+        networks:
+            - Kafka-network
+
+networks:
+    Kafka-network:
+        driver: bridge
