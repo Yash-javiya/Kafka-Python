@@ -8,7 +8,7 @@ def delivery_report(err, msg):
 
 # Kafka producer configuration
 producer_config = {
-    "bootstrap.servers": "localhost:9092"
+    "bootstrap.servers": "localhost:29092,localhost:29094,localhost:29096"
 }
 
 # Create a producer instance
