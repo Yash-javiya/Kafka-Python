@@ -4,90 +4,76 @@ services:
         hostname: kafka1
         container_name: kafka1
         ports:
-            - '9092:9092'
-            - '9093:9093'
             - '29092:29092'
         environment:
             KAFKA_BROKER_ID: 1
-            KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092,CONTROLLER://0.0.0.0:9093,EXTERNAL://0.0.0.0:29092
+            KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092,EXTERNAL://0.0.0.0:29092,CONTROLLER://0.0.0.0:9093
             KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka1:9092,EXTERNAL://localhost:29092
-            KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,CONTROLLER:PLAINTEXT,EXTERNAL:PLAINTEXT
+            KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,EXTERNAL:PLAINTEXT,CONTROLLER:PLAINTEXT
             KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
-            KAFKA_CONTROLLER_QUORUM_VOTERS: '1@kafka1:9093,2@kafka2:9093,3@kafka3:9093'
+            # KAFKA_CONTROLLER_QUORUM_VOTERS: '1@kafka1:9093,2@kafka2:9093,3@kafka3:9093'
+            KAFKA_CONTROLLER_QUORUM_VOTERS: '1@kafka1:9093'
             KAFKA_PROCESS_ROLES: broker,controller
             KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
             KAFKA_LOG_DIRS: /var/lib/kafka/data
-            KAFKA_AUTO_CREATE_TOPICS_ENABLE: 'true'
-            KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 3
-            KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 2
-            KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 3
-            KAFKA_MIN_INSYNC_REPLICAS: 2
-            KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 3000
             CLUSTER_ID: '6NY7bTGQQSGFZaEI-6N8dw'
+            KAFKA_JMX_PORT: 7081
+            KAFKA_OPTS: '-javaagent:/usr/app/jmx_prometheus_javaagent.jar=7071:/usr/app/kafka-3_0_0.yml'
         volumes:
             - /var/lib/kafka/data
+            - ./jmx_exporter:/usr/app
         networks:
-            - kraft-network
+            - kafka-network
 
-    kafka2:
-        image: confluentinc/cp-kafka:latest
-        hostname: kafka2
-        container_name: kafka2
-        ports:
-            - '9094:9092'
-            - '9095:9093'
-            - '29094:29094'
-        environment:
-            KAFKA_BROKER_ID: 2
-            KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092,CONTROLLER://0.0.0.0:9093,EXTERNAL://0.0.0.0:29094
-            KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka2:9092,EXTERNAL://localhost:29094
-            KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,CONTROLLER:PLAINTEXT,EXTERNAL:PLAINTEXT
-            KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
-            KAFKA_CONTROLLER_QUORUM_VOTERS: '1@kafka1:9093,2@kafka2:9093,3@kafka3:9093'
-            KAFKA_PROCESS_ROLES: broker,controller
-            KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
-            KAFKA_LOG_DIRS: /var/lib/kafka/data
-            KAFKA_AUTO_CREATE_TOPICS_ENABLE: 'true'
-            KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 3
-            KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 2
-            KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 3
-            KAFKA_MIN_INSYNC_REPLICAS: 2
-            KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 3000
-            CLUSTER_ID: '6NY7bTGQQSGFZaEI-6N8dw'
-        volumes:
-            - /var/lib/kafka/data
-        networks:
-            - kraft-network
+    # kafka2:
+    #     image: confluentinc/cp-kafka:latest
+    #     hostname: kafka2
+    #     container_name: kafka2
+    #     ports:
+    #         - '29094:29092'
+    #     environment:
+    #         KAFKA_BROKER_ID: 2
+    #         KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092,EXTERNAL://0.0.0.0:29092,CONTROLLER://0.0.0.0:9093
+    #         KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka2:9092,EXTERNAL://localhost:29094
+    #         KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,EXTERNAL:PLAINTEXT,CONTROLLER:PLAINTEXT
+    #         KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+    #         KAFKA_CONTROLLER_QUORUM_VOTERS: '1@kafka1:9093,2@kafka2:9093,3@kafka3:9093'
+    #         KAFKA_PROCESS_ROLES: broker,controller
+    #         KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+    #         KAFKA_LOG_DIRS: /var/lib/kafka/data
+    #         CLUSTER_ID: '6NY7bTGQQSGFZaEI-6N8dw'
+    #         KAFKA_JMX_PORT: 7081
+    #         KAFKA_OPTS: '-javaagent:/usr/app/jmx_prometheus_javaagent.jar=7071:/usr/app/kafka-3_0_0.yml'
+    #     volumes:
+    #         - /var/lib/kafka/data
+    #         - ./jmx_exporter:/usr/app
+    #     networks:
+    #         - kafka-network
 
-    kafka3:
-        image: confluentinc/cp-kafka:latest
-        hostname: kafka3
-        container_name: kafka3
-        ports:
-            - '9096:9092'
-            - '9097:9093'
-            - '29096:29096'
-        environment:
-            KAFKA_BROKER_ID: 3
-            KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092,CONTROLLER://0.0.0.0:9093,EXTERNAL://0.0.0.0:29096
-            KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka3:9092,EXTERNAL://localhost:29096
-            KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,CONTROLLER:PLAINTEXT,EXTERNAL:PLAINTEXT
-            KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
-            KAFKA_CONTROLLER_QUORUM_VOTERS: '1@kafka1:9093,2@kafka2:9093,3@kafka3:9093'
-            KAFKA_PROCESS_ROLES: broker,controller
-            KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
-            KAFKA_LOG_DIRS: /var/lib/kafka/data
-            KAFKA_AUTO_CREATE_TOPICS_ENABLE: 'true'
-            KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 3
-            KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 2
-            KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 3
-            KAFKA_MIN_INSYNC_REPLICAS: 2
-            KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 3000
-            CLUSTER_ID: '6NY7bTGQQSGFZaEI-6N8dw'
-        volumes:
-            - /var/lib/kafka/data
-        networks:
-            - kraft-network
+    # kafka3:
+    #     image: confluentinc/cp-kafka:latest
+    #     hostname: kafka3
+    #     container_name: kafka3
+    #     ports:
+    #         - '29096:29092'
+    #     environment:
+    #         KAFKA_BROKER_ID: 3
+    #         KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092,EXTERNAL://0.0.0.0:29092,CONTROLLER://0.0.0.0:9093
+    #         KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka3:9092,EXTERNAL://localhost:29096
+    #         KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,EXTERNAL:PLAINTEXT,CONTROLLER:PLAINTEXT
+    #         KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+    #         KAFKA_CONTROLLER_QUORUM_VOTERS: '1@kafka1:9093,2@kafka2:9093,3@kafka3:9093'
+    #         KAFKA_PROCESS_ROLES: broker,controller
+    #         KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+    #         KAFKA_LOG_DIRS: /var/lib/kafka/data
+    #         CLUSTER_ID: '6NY7bTGQQSGFZaEI-6N8dw'
+    #         KAFKA_JMX_PORT: 7081
+    #         KAFKA_OPTS: '-javaagent:/usr/app/jmx_prometheus_javaagent.jar=7071:/usr/app/kafka-3_0_0.yml'
+    #     volumes:
+    #         - /var/lib/kafka/data
+    #         - ./jmx_exporter:/usr/app
+    #     networks:
+    #         - kafka-network
 
     kafka-ui:
         image: provectuslabs/kafka-ui:latest
@@ -95,15 +81,42 @@ services:
         ports:
             - '8080:8080'
         environment:
-            KAFKA_CLUSTERS_0_NAME: 'kraft-cluster'
-            KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: 'kafka1:9092,kafka2:9092,kafka3:9092'
+            DYNAMIC_CONFIG_ENABLED: 'true'
+            KAFKA_CLUSTERS_0_NAME: 'kafka-cluster'
+            # KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: 'kafka1:9092,kafka2:9092,kafka3:9092'
+            KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: 'kafka1:9092'
+            AUTH_TYPE: 'LOGIN_FORM'
+            SPRING_SECURITY_USER_NAME: admin
+            SPRING_SECURITY_USER_PASSWORD: pass
         depends_on:
             - kafka1
-            - kafka2
-            - kafka3
+            # - kafka2
+            # - kafka3
         networks:
-            - kraft-network
+            - kafka-network
+
+    # prometheus:
+    #     image: prom/prometheus:latest
+    #     container_name: prometheus
+    #     volumes:
+    #         - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+    #     ports:
+    #         - '9090:9090'
+    #     networks:
+    #         - kafka-network
+
+    # grafana:
+    #     image: grafana/grafana:latest
+    #     container_name: grafana
+    #     ports:
+    #         - '3000:3000'
+    #     depends_on:
+    #         - prometheus
+    #     environment:
+    #         - GF_SECURITY_ADMIN_USER=admin
+    #         - GF_SECURITY_ADMIN_PASSWORD=admin
+    #     networks:
+    #         - kafka-network
 
 networks:
-    kraft-network:
-        driver: bridge
+    kafka-network:

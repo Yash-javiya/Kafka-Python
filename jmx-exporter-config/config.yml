@@ -1,0 +1,4 @@
+rules:
+  - pattern: "kafka.server<type=(.*), name=(.*)><>(Count|Value|Rate|MeanRate|OneMinuteRate|FiveMinuteRate|FifteenMinuteRate)"
+    name: kafka_server_$1_$2
+    type: GAUGE
