@@ -85,9 +85,9 @@ services:
             KAFKA_CLUSTERS_0_NAME: 'kafka-cluster'
             # KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: 'kafka1:9092,kafka2:9092,kafka3:9092'
             KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: 'kafka1:9092'
-            AUTH_TYPE: 'LOGIN_FORM'
-            SPRING_SECURITY_USER_NAME: admin
-            SPRING_SECURITY_USER_PASSWORD: pass
+            # AUTH_TYPE: 'LOGIN_FORM'
+            # SPRING_SECURITY_USER_NAME: admin
+            # SPRING_SECURITY_USER_PASSWORD: pass
         depends_on:
             - kafka1
             # - kafka2
